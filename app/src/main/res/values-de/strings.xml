@@ -1,0 +1,48 @@
+<resources>
+    <string name="title_main">OpenDMO · DMO-Gateway OpenGD77↔DMR-Netz</string>
+    <string name="lbl_host">Master (Host)</string>
+    <string name="lbl_port">Port</string>
+    <string name="lbl_pass">Passphrase</string>
+    <string name="lbl_dmrid">DMR-ID</string>
+    <string name="lbl_suffix">Suffix / ESSID (00-99)</string>
+    <string name="hint_peer">Login-ID = DMR-ID + Suffix (vermeidet Konflikt mit deinem Hotspot)</string>
+    <string name="peer_login_fmt">HBP-Login-ID: %1$d  (DMR-ID + Suffix)</string>
+    <string name="lbl_callsign">Rufzeichen</string>
+    <string name="lbl_tg">Talkgroup</string>
+    <string name="lbl_slot">Zeitschlitz (1/2)</string>
+    <string name="lbl_cc">Color Code</string>
+    <string name="lbl_freq">DMO-Frequenz (MHz)</string>
+
+    <string name="btn_start">START</string>
+    <string name="btn_stop">STOPP</string>
+    <string name="btn_minimize">MINIMIEREN</string>
+    <string name="btn_exit">BEENDEN</string>
+
+    <string name="st_stopped">gestoppt</string>
+    <string name="net_ok">Netz ✓</string>
+    <string name="net_ko">Netz ✗</string>
+
+    <string name="toast_usb_denied">USB-Berechtigung verweigert</string>
+    <string name="toast_radio_start">OpenGD77 erkannt · Gateway wird gestartet</string>
+    <string name="toast_radio_config">OpenGD77 erkannt · Host, DMR-ID und TG einstellen, dann START</string>
+    <string name="toast_need_host">Master-Host eingeben</string>
+    <string name="toast_need_dmrid">DMR-ID eingeben</string>
+    <string name="toast_need_tg">Talkgroup eingeben</string>
+
+    <string name="notif_title">OpenDMO-Gateway</string>
+    <string name="notif_starting">Start…</string>
+    <string name="log_otg_down">OTG nicht betriebsbereit (USB-Berechtigung / Kabel prüfen)</string>
+
+    <string name="st_login">Anmeldung…</string>
+    <string name="st_connected_fmt">VERBUNDEN %1$s</string>
+    <string name="st_reject">abgelehnt (MSTNAK)</string>
+    <string name="st_error_fmt">Fehler: %1$s</string>
+
+    <string name="otg_no_radio">OTG: OpenGD77 nicht gefunden</string>
+    <string name="otg_no_perm">OTG: USB-Berechtigung fehlt</string>
+    <string name="otg_no_open">OTG: USB konnte nicht geöffnet werden</string>
+    <string name="otg_modem_open">Modem offen</string>
+    <string name="otg_radio_fmt">Radio: %1$s</string>
+    <string name="otg_open_fmt">%1$s · %2$s MHz CC%3$d</string>
+    <string name="otg_err_fmt">OTG: %1$s</string>
+</resources>

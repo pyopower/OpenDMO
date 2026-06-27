@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/title_main"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:paddingBottom="12dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_host" />
+        <EditText android:id="@+id/etHost" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="textUri" android:hint="2131.adn.systems" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_port" />
+        <EditText android:id="@+id/etPort" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="number" android:hint="62031" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_pass" />
+        <EditText android:id="@+id/etPass" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="textPassword" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_dmrid" />
+        <EditText android:id="@+id/etRadioId" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="number" android:hint="1234567" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_suffix" />
+        <EditText android:id="@+id/etSuffix" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="number" android:hint="01" />
+        <TextView android:id="@+id/tvPeerId" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="12sp" android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/hint_peer" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_callsign" />
+        <EditText android:id="@+id/etCall" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="textCapCharacters" android:hint="EA1ABC" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_tg" />
+        <EditText android:id="@+id/etTg" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="number" android:hint="213666" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_slot" />
+        <EditText android:id="@+id/etSlot" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="number" android:hint="2" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_cc" />
+        <EditText android:id="@+id/etCc" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="number" android:hint="1" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_freq" />
+        <EditText android:id="@+id/etFreq" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="numberDecimal" android:hint="439.025" />
+
+        <Button android:id="@+id/btnToggle" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:text="@string/btn_start" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:weightSum="2">
+            <Button android:id="@+id/btnMinimize" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginEnd="4dp"
+                style="?attr/materialButtonOutlinedStyle" android:text="@string/btn_minimize" />
+            <Button android:id="@+id/btnExit" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginStart="4dp"
+                style="?attr/materialButtonOutlinedStyle" android:text="@string/btn_exit" />
+        </LinearLayout>
+
+        <TextView android:id="@+id/tvStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:text="@string/st_stopped" android:textStyle="bold" />
+
+        <TextView android:id="@+id/tvLog" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:fontFamily="monospace" android:textSize="11sp"
+            android:text="" />
+
+        <TextView android:id="@+id/tvCredits" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="20dp" android:gravity="center"
+            android:textSize="12sp" android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/credits" />
+    </LinearLayout>
+</ScrollView>

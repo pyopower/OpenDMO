@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name" translatable="false">OpenDMO</string>
+    <string name="credits" translatable="false">OpenDMO · by C31AG · 2026</string>
+
+    <string name="title_main">OpenDMO · DMO gateway OpenGD77↔DMR network</string>
+    <string name="lbl_host">Master (host)</string>
+    <string name="lbl_port">Port</string>
+    <string name="lbl_pass">Passphrase</string>
+    <string name="lbl_dmrid">DMR ID</string>
+    <string name="lbl_suffix">Suffix / ESSID (00-99)</string>
+    <string name="hint_peer">Login ID = DMR ID + suffix (avoids clashing with your hotspot)</string>
+    <string name="peer_login_fmt">HBP login ID: %1$d  (DMR ID + suffix)</string>
+    <string name="lbl_callsign">Callsign</string>
+    <string name="lbl_tg">Talkgroup</string>
+    <string name="lbl_slot">Timeslot (1/2)</string>
+    <string name="lbl_cc">Color Code</string>
+    <string name="lbl_freq">DMO frequency (MHz)</string>
+
+    <string name="btn_start">START</string>
+    <string name="btn_stop">STOP</string>
+    <string name="btn_minimize">MINIMIZE</string>
+    <string name="btn_exit">EXIT</string>
+
+    <string name="st_stopped">stopped</string>
+    <string name="net_ok">net ✓</string>
+    <string name="net_ko">net ✗</string>
+    <string name="status_fmt">%1$s  ·  %2$s</string>
+
+    <string name="toast_usb_denied">USB permission denied</string>
+    <string name="toast_radio_start">OpenGD77 detected · starting gateway</string>
+    <string name="toast_radio_config">OpenGD77 detected · set host, DMR ID and TG, then tap START</string>
+    <string name="toast_need_host">Enter the master host</string>
+    <string name="toast_need_dmrid">Enter your DMR ID</string>
+    <string name="toast_need_tg">Enter the talkgroup</string>
+
+    <string name="notif_title">OpenDMO gateway</string>
+    <string name="notif_starting">Starting…</string>
+    <string name="log_otg_down">OTG not operational (check USB permission / cable)</string>
+
+    <string name="st_login">logging in…</string>
+    <string name="st_connected_fmt">CONNECTED %1$s</string>
+    <string name="st_reject">rejected (MSTNAK)</string>
+    <string name="st_error_fmt">error: %1$s</string>
+
+    <string name="otg_no_radio">OTG: OpenGD77 not found</string>
+    <string name="otg_no_perm">OTG: USB permission missing</string>
+    <string name="otg_no_open">OTG: could not open USB</string>
+    <string name="otg_modem_open">modem open</string>
+    <string name="otg_radio_fmt">radio: %1$s</string>
+    <string name="otg_open_fmt">%1$s · %2$s MHz CC%3$d</string>
+    <string name="otg_err_fmt">OTG: %1$s</string>
+</resources>

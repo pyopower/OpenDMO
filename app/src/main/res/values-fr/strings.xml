@@ -1,0 +1,48 @@
+<resources>
+    <string name="title_main">OpenDMO · passerelle DMO OpenGD77↔réseau DMR</string>
+    <string name="lbl_host">Master (hôte)</string>
+    <string name="lbl_port">Port</string>
+    <string name="lbl_pass">Passphrase</string>
+    <string name="lbl_dmrid">DMR ID</string>
+    <string name="lbl_suffix">Suffixe / ESSID (00-99)</string>
+    <string name="hint_peer">ID de connexion = DMR ID + suffixe (évite le conflit avec votre hotspot)</string>
+    <string name="peer_login_fmt">ID de connexion HBP : %1$d  (DMR ID + suffixe)</string>
+    <string name="lbl_callsign">Indicatif</string>
+    <string name="lbl_tg">Talkgroup</string>
+    <string name="lbl_slot">Timeslot (1/2)</string>
+    <string name="lbl_cc">Color Code</string>
+    <string name="lbl_freq">Fréquence DMO (MHz)</string>
+
+    <string name="btn_start">DÉMARRER</string>
+    <string name="btn_stop">ARRÊTER</string>
+    <string name="btn_minimize">RÉDUIRE</string>
+    <string name="btn_exit">QUITTER</string>
+
+    <string name="st_stopped">arrêté</string>
+    <string name="net_ok">réseau ✓</string>
+    <string name="net_ko">réseau ✗</string>
+
+    <string name="toast_usb_denied">Autorisation USB refusée</string>
+    <string name="toast_radio_start">OpenGD77 détectée · démarrage de la passerelle</string>
+    <string name="toast_radio_config">OpenGD77 détectée · réglez hôte, DMR ID et TG puis appuyez sur DÉMARRER</string>
+    <string name="toast_need_host">Saisissez l\'hôte du master</string>
+    <string name="toast_need_dmrid">Saisissez votre DMR ID</string>
+    <string name="toast_need_tg">Saisissez le talkgroup</string>
+
+    <string name="notif_title">Passerelle OpenDMO</string>
+    <string name="notif_starting">Démarrage…</string>
+    <string name="log_otg_down">OTG non opérationnel (vérifiez l\'autorisation USB / le câble)</string>
+
+    <string name="st_login">connexion…</string>
+    <string name="st_connected_fmt">CONNECTÉ %1$s</string>
+    <string name="st_reject">refusé (MSTNAK)</string>
+    <string name="st_error_fmt">erreur : %1$s</string>
+
+    <string name="otg_no_radio">OTG : OpenGD77 introuvable</string>
+    <string name="otg_no_perm">OTG : autorisation USB manquante</string>
+    <string name="otg_no_open">OTG : impossible d\'ouvrir l\'USB</string>
+    <string name="otg_modem_open">modem ouvert</string>
+    <string name="otg_radio_fmt">radio : %1$s</string>
+    <string name="otg_open_fmt">%1$s · %2$s MHz CC%3$d</string>
+    <string name="otg_err_fmt">OTG : %1$s</string>
+</resources>

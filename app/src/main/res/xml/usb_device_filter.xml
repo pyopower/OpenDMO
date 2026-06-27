@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OpenGD77 (GD-77/RD-5R/DM-1801) = chip NXP LPC, CDC-ACM -->
+    <usb-device vendor-id="8137" product-id="148" />   <!-- 0x1fc9 / 0x0094 -->
+    <usb-device vendor-id="8137" />                     <!-- cualquier NXP por si cambia el PID -->
+    <usb-device vendor-id="5538" product-id="115" />    <!-- 0x15a2 / 0x0073 variante -->
+</resources>
