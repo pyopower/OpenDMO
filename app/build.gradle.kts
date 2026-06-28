@@ -6,8 +6,10 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-// Credenciales de firma release (no versionado). Ver keystore.properties.
-val keystorePropsFile = rootProject.file("keystore.properties")
+// Credenciales de firma release (NUNCA versionado ni en GitHub): viven FUERA del arbol del
+// proyecto, en ~/keystores/opendmo/, para que no las borre un rsync --delete ni acaben en git.
+// OpenDMO se firma con el keystore de RadioVampiros (misma identidad de firma).
+val keystorePropsFile = file("/home/yo/keystores/opendmo/keystore.properties")
 val keystoreProps = Properties().apply {
     if (keystorePropsFile.exists()) load(FileInputStream(keystorePropsFile))
 }
@@ -20,8 +22,8 @@ android {
         applicationId = "ovh.adan.opendmo"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "0.1.3"
+        versionCode = 5
+        versionName = "0.1.4"
     }
 
     signingConfigs {
