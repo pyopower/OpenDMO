@@ -62,8 +62,9 @@ class DmoService : Service() {
         val p = HbpPeer(
             context = this, cfg = cfg,
             onDmrd = { ft, dv, src, dst, sid, burst ->
-                // gateway: solo bajamos a RF el tráfico del TG configurado (group call)
-                if (dst == cfg.talkgroup) ctrl.onNetDmrd(ft, dv, src, dst, sid, burst)
+                // En dinámico (BM/TGIF/ADN) el master ya solo envía los TG suscritos -> pasamos todo.
+                // En estático solo bajamos a RF el TG configurado.
+                if (cfg.dynamicTg || dst == cfg.talkgroup) ctrl.onNetDmrd(ft, dv, src, dst, sid, burst)
             },
             onState = { s -> DmoState.netConnected = (peer?.connected == true); DmoState.pushStatus(s) },
             log = { DmoState.log(it) },

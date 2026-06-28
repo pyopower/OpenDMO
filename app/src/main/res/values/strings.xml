@@ -12,6 +12,8 @@
     <string name="peer_login_fmt">HBP login ID: %1$d  (DMR ID + suffix)</string>
     <string name="lbl_callsign">Callsign</string>
     <string name="lbl_tg">Talkgroup</string>
+    <string name="lbl_dynamic_tg">Dynamic TG (BM/TGIF/ADN)</string>
+    <string name="hint_dynamic_tg">The radio picks the TG (and TG 4000 disconnects). Disable for static-routing masters (e.g. plain HBlink). The TG below is the fallback/default.</string>
     <string name="lbl_slot">Timeslot (1/2)</string>
     <string name="lbl_cc">Color Code</string>
     <string name="lbl_freq">DMO frequency (MHz)</string>

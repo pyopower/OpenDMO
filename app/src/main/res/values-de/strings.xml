@@ -9,6 +9,8 @@
     <string name="peer_login_fmt">HBP-Login-ID: %1$d  (DMR-ID + Suffix)</string>
     <string name="lbl_callsign">Rufzeichen</string>
     <string name="lbl_tg">Talkgroup</string>
+    <string name="lbl_dynamic_tg">Dynamisches TG (BM/TGIF/ADN)</string>
+    <string name="hint_dynamic_tg">Das Funkgerät wählt das TG (TG 4000 trennt). Für Master mit statischem Routing (z. B. einfaches HBlink) deaktivieren. Das TG unten ist der Standard/Rückfall.</string>
     <string name="lbl_slot">Zeitschlitz (1/2)</string>
     <string name="lbl_cc">Color Code</string>
     <string name="lbl_freq">DMO-Frequenz (MHz)</string>

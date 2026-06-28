@@ -23,6 +23,7 @@ class DmoBridge(
     private val radioId: Int,
     private val talkgroup: Int,
     private val networkSlot: Int,
+    private val dynamicTg: Boolean,    // si true, el dst sale del Full LC que marca la radio (BM/TGIF/ADN)
     private val sendDmrd: (seqNo: Int, rfSrc: Int, dst: Int, slot: Int,
                            frameType: Int, dtypeVseq: Int, streamId: ByteArray, burst: ByteArray) -> Unit,
     private val log: (String) -> Unit = {},
@@ -33,6 +34,7 @@ class DmoBridge(
     private var txStream: ByteArray? = null
     private var txSeq = 0
     private var vpos = 0
+    private var txDst = talkgroup                  // TG destino de la llamada RF en curso (latcheado en la cabecera)
     @Volatile private var rfUntil = 0L            // ms monotónicos: RF activo hasta aquí (half-duplex)
     var rfFrames = 0; private set
 
@@ -64,7 +66,9 @@ class DmoBridge(
                     1 -> {                                       // VOICE LC HEADER (la radio lo repite ~3x)
                         if (txStream == null) {                  // SOLO inicia stream si no hay llamada activa
                             txStream = Random.nextBytes(4); txSeq = 0; vpos = 0; rfFrames = 0
-                            setLastRx("RF→RV TG$talkgroup")
+                            // TG dinámico: el TG real lo marca la radio en el Full LC de esta cabecera.
+                            txDst = if (dynamicTg) (DmrLc.decodeHeaderLc(data)?.dst ?: talkgroup) else talkgroup
+                            setLastRx("RF→TG$txDst")
                         }
                         ft = DmrVoice.HBPF_DATA_SYNC; dv = 1
                     }
@@ -76,7 +80,7 @@ class DmoBridge(
             else -> { vpos = (vpos + 1) % 6; ft = DmrVoice.HBPF_VOICE; dv = vpos }  // voz B-F
         }
         if (txStream == null) { txStream = Random.nextBytes(4); txSeq = 0 }
-        sendDmrd(txSeq and 0xFF, radioId, talkgroup, networkSlot, ft, dv, txStream!!, data)
+        sendDmrd(txSeq and 0xFF, radioId, txDst, networkSlot, ft, dv, txStream!!, data)
         txSeq++; rfFrames++
         if (dataSync && (control and 0x0F) == 2) txStream = null   // fin de llamada
     }

@@ -31,6 +31,7 @@ class DmoController(
 
         val br = DmoBridge(
             radioId = cfg.radioId, talkgroup = cfg.talkgroup, networkSlot = cfg.slot,
+            dynamicTg = cfg.dynamicTg,
             sendDmrd = { seq, src, dst, sl, ft, vseq, sid, burst ->
                 val pkt = DmrVoice.dmrdHeader(seq, src, dst, cfg.peerId, sl, ft, vseq, sid) + burst
                 sender(pkt); Unit

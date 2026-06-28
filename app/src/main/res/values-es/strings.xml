@@ -9,6 +9,8 @@
     <string name="peer_login_fmt">ID de login HBP: %1$d  (DMR ID + sufijo)</string>
     <string name="lbl_callsign">Indicativo</string>
     <string name="lbl_tg">Talkgroup</string>
+    <string name="lbl_dynamic_tg">TG dinámico (BM/TGIF/ADN)</string>
+    <string name="hint_dynamic_tg">El TG lo marca la radio (y el TG 4000 desconecta). Desactívalo para masters de enrutado estático (p. ej. HBlink simple). El TG de abajo es el de reserva/defecto.</string>
     <string name="lbl_slot">Timeslot (1/2)</string>
     <string name="lbl_cc">Color Code</string>
     <string name="lbl_freq">Frecuencia DMO (MHz)</string>

@@ -45,6 +45,11 @@
         <EditText android:id="@+id/etCall" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:inputType="textCapCharacters" android:hint="EA1ABC" />
 
+        <CheckBox android:id="@+id/cbDynamic" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/lbl_dynamic_tg" android:checked="true" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="12sp" android:text="@string/hint_dynamic_tg" />
+
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_tg" />
         <EditText android:id="@+id/etTg" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:inputType="number" android:hint="213666" />

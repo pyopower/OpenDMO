@@ -23,6 +23,7 @@ data class Config(
     var slot: Int = 2,
     var colorCode: Int = 1,
     var freqMHz: String = "439.025",
+    var dynamicTg: Boolean = true,   // TG dinámico (estilo BM/TGIF/ADN): usa el TG que marca la radio
 ) {
     /** ID de login HBP = DMR ID + sufijo de 2 dígitos. */
     val peerId: Int get() = radioId * 100 + (suffix.coerceIn(0, 99))
@@ -32,7 +33,7 @@ data class Config(
             putString("host", host); putInt("port", port); putString("pass", passphrase)
             putInt("radioId", radioId); putInt("suffix", suffix); putString("call", callsign)
             putInt("tg", talkgroup); putInt("slot", slot); putInt("cc", colorCode)
-            putString("freq", freqMHz)
+            putString("freq", freqMHz); putBoolean("dyn", dynamicTg)
         }.apply()
     }
 
@@ -52,6 +53,7 @@ data class Config(
                 slot = p.getInt("slot", d.slot),
                 colorCode = p.getInt("cc", d.colorCode),
                 freqMHz = p.getString("freq", d.freqMHz)!!,
+                dynamicTg = p.getBoolean("dyn", d.dynamicTg),
             )
         }
     }

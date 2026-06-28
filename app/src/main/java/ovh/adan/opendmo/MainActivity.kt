@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleUsbAttach(intent: Intent?) {
         if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
             val cfg = Config.load(this)
-            if (cfg.host.isNotBlank() && cfg.radioId != 0 && cfg.talkgroup != 0) {
+            if (cfg.host.isNotBlank() && cfg.radioId != 0 && (cfg.dynamicTg || cfg.talkgroup != 0)) {
                 if (!DmoState.running) {
                     toast(getString(R.string.toast_radio_start))
                     startAll()
@@ -143,6 +143,7 @@ class MainActivity : AppCompatActivity() {
         b.etTg.setText(if (c.talkgroup != 0) c.talkgroup.toString() else "")
         b.etSlot.setText(c.slot.toString())
         b.etCc.setText(c.colorCode.toString()); b.etFreq.setText(c.freqMHz)
+        b.cbDynamic.isChecked = c.dynamicTg
         updatePeerHint()
         // recalcular la vista previa del ID de login al teclear
         b.etRadioId.doAfterTextChanged { updatePeerHint() }
@@ -169,10 +170,11 @@ class MainActivity : AppCompatActivity() {
             slot = i(b.etSlot.text.toString(), 2).coerceIn(1, 2),
             colorCode = i(b.etCc.text.toString(), 1).coerceIn(0, 15),
             freqMHz = b.etFreq.text.toString().trim().ifBlank { "439.025" },
+            dynamicTg = b.cbDynamic.isChecked,
         )
         if (c.host.isBlank()) { toast(getString(R.string.toast_need_host)); return null }
         if (c.radioId == 0) { toast(getString(R.string.toast_need_dmrid)); return null }
-        if (c.talkgroup == 0) { toast(getString(R.string.toast_need_tg)); return null }
+        if (!c.dynamicTg && c.talkgroup == 0) { toast(getString(R.string.toast_need_tg)); return null }
         return c
     }
 
