@@ -148,14 +148,25 @@ class MmdvmModem(
     }
 
     private fun txLoop() {
+        var lastPoll = System.nanoTime()
         while (!stop) {
-            val f = try { txQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS) } catch (_: InterruptedException) { null } ?: continue
-            try {
-                port.write(f, WRITE_TIMEOUT_MS)
-            } catch (e: Exception) {
-                log("Error escribiendo al módem: ${e.message}")
-                connected = false
-                return
+            val f = try { txQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS) } catch (_: InterruptedException) { null }
+            if (f != null) {
+                try {
+                    port.write(f, WRITE_TIMEOUT_MS)
+                } catch (e: Exception) {
+                    if (stop) return
+                    log("Error escribiendo al módem: ${e.message}")
+                    connected = false
+                    return
+                }
+            }
+            // Keepalive MMDVM GET_STATUS (trama 0x01 del protocolo) cada 1 s. Se hace aquí, en el
+            // único hilo de escritura, porque rxLoop ahora lee en modo bloqueante (ver abajo).
+            val now = System.nanoTime()
+            if (now - lastPoll > 1_000_000_000L) {
+                lastPoll = now
+                try { frame(GET_STATUS) } catch (_: Exception) {}
             }
         }
     }
@@ -164,11 +175,17 @@ class MmdvmModem(
     private fun rxLoop() {
         val buf = ArrayDeque<Byte>()
         val tmp = ByteArray(256)
-        var lastPoll = 0L
         while (!stop) {
+            // Lectura BLOQUEANTE (timeout = 0). En usb-serial-for-android 3.7.0 una lectura con
+            // timeout > 0 que vence sin datos dispara un test de conexión por control-transfer USB
+            // GET_STATUS estándar; el CDC del OpenGD77 no lo responde y la lib lanza
+            // "USB get_status request failed", que mataba el bucle en cada hueco sin RF (DMO está
+            // casi siempre en silencio). El modo bloqueante usa UsbRequest/requestWait y NO hace
+            // ese test → sin falsos positivos de desconexión. close() cancela la request y nos saca.
             val n = try {
-                port.read(tmp, 50)
+                port.read(tmp, 0)
             } catch (e: Exception) {
+                if (stop) return
                 log("Error leyendo del módem: ${e.message}")
                 connected = false
                 return
@@ -176,11 +193,6 @@ class MmdvmModem(
             if (n > 0) {
                 for (k in 0 until n) buf.addLast(tmp[k])
                 consume(buf)
-            }
-            val now = System.nanoTime()
-            if (now - lastPoll > 1_000_000_000L) {   // poll de estado cada 1 s
-                lastPoll = now
-                try { frame(GET_STATUS) } catch (_: Exception) {}
             }
         }
     }
