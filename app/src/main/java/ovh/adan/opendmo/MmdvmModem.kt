@@ -49,6 +49,29 @@ class MmdvmModem(
     private var rxThread: Thread? = null
     private var txThread: Thread? = null
 
+    // usb-serial-for-android 3.7.0 hace dentro de read() un "testConnection" = control-transfer USB
+    // GET_STATUS estandar. El firmware del OpenGD77 (MMDVM_HS) NO responde a ese request -> el
+    // controlTransfer devuelve <0 -> IOException("USB get_status request failed") en cuanto una
+    // lectura no trae datos (en DMO casi siempre). El modo DMO web (WebSerial) nunca lo envia, por
+    // eso alli funciona. Solucion: usar la sobrecarga read(byte[],int,testConnection=false), que NO
+    // dispara ese test (la ruta bulkTransfer con timeout>0 solo testea si el flag es true). Es
+    // protected y no hay equivalente publico en 3.7.0, asi que la resolvemos por reflexion.
+    private val readNoTest: java.lang.reflect.Method? = runCatching {
+        Class.forName("com.hoho.android.usbserial.driver.CommonUsbSerialPort")
+            .getDeclaredMethod("read", ByteArray::class.java, Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType)
+            .also { it.isAccessible = true }
+    }.getOrNull()
+
+    /** Lectura del puerto SIN el testConnection (control-transfer GET_STATUS) de la libreria. */
+    private fun readPort(dst: ByteArray, timeoutMs: Int): Int {
+        val m = readNoTest ?: return port.read(dst, timeoutMs)
+        return try {
+            m.invoke(port, dst, timeoutMs, false) as Int
+        } catch (e: java.lang.reflect.InvocationTargetException) {
+            throw (e.cause as? Exception ?: e)
+        }
+    }
+
     // ---------- ciclo de vida ----------
     fun open() {
         port.open(connection)
@@ -113,7 +136,7 @@ class MmdvmModem(
         // leemos lo que haya (version/ack)
         try {
             val buf = ByteArray(256)
-            val n = port.read(buf, 300)
+            val n = readPort(buf, 300)
             if (n > 0) {
                 version = extractVersion(buf, n)
                 if (version.isNotEmpty()) log("Radio: $version")
@@ -148,25 +171,14 @@ class MmdvmModem(
     }
 
     private fun txLoop() {
-        var lastPoll = System.nanoTime()
         while (!stop) {
-            val f = try { txQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS) } catch (_: InterruptedException) { null }
-            if (f != null) {
-                try {
-                    port.write(f, WRITE_TIMEOUT_MS)
-                } catch (e: Exception) {
-                    if (stop) return
-                    log("Error escribiendo al módem: ${e.message}")
-                    connected = false
-                    return
-                }
-            }
-            // Keepalive MMDVM GET_STATUS (trama 0x01 del protocolo) cada 1 s. Se hace aquí, en el
-            // único hilo de escritura, porque rxLoop ahora lee en modo bloqueante (ver abajo).
-            val now = System.nanoTime()
-            if (now - lastPoll > 1_000_000_000L) {
-                lastPoll = now
-                try { frame(GET_STATUS) } catch (_: Exception) {}
+            val f = try { txQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS) } catch (_: InterruptedException) { null } ?: continue
+            try {
+                port.write(f, WRITE_TIMEOUT_MS)
+            } catch (e: Exception) {
+                log("Error escribiendo al módem: ${e.message}")
+                connected = false
+                return
             }
         }
     }
@@ -175,17 +187,11 @@ class MmdvmModem(
     private fun rxLoop() {
         val buf = ArrayDeque<Byte>()
         val tmp = ByteArray(256)
+        var lastPoll = 0L
         while (!stop) {
-            // Lectura BLOQUEANTE (timeout = 0). En usb-serial-for-android 3.7.0 una lectura con
-            // timeout > 0 que vence sin datos dispara un test de conexión por control-transfer USB
-            // GET_STATUS estándar; el CDC del OpenGD77 no lo responde y la lib lanza
-            // "USB get_status request failed", que mataba el bucle en cada hueco sin RF (DMO está
-            // casi siempre en silencio). El modo bloqueante usa UsbRequest/requestWait y NO hace
-            // ese test → sin falsos positivos de desconexión. close() cancela la request y nos saca.
             val n = try {
-                port.read(tmp, 0)
+                readPort(tmp, 50)
             } catch (e: Exception) {
-                if (stop) return
                 log("Error leyendo del módem: ${e.message}")
                 connected = false
                 return
@@ -193,6 +199,11 @@ class MmdvmModem(
             if (n > 0) {
                 for (k in 0 until n) buf.addLast(tmp[k])
                 consume(buf)
+            }
+            val now = System.nanoTime()
+            if (now - lastPoll > 1_000_000_000L) {   // poll de estado cada 1 s
+                lastPoll = now
+                try { frame(GET_STATUS) } catch (_: Exception) {}
             }
         }
     }
