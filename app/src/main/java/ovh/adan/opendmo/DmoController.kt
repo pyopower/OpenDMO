@@ -41,7 +41,7 @@ class DmoController(
         val freqHz = try { Math.round(cfg.freqMHz.trim().toDouble() * 1_000_000.0).toInt() } catch (_: Exception) { 439_025_000 }
         val md = MmdvmModem(
             port = driver.ports[0], connection = conn,
-            baud = 115200, colorCode = cfg.colorCode, freqHz = freqHz,
+            baud = 115200, colorCode = cfg.colorCode, freqHz = freqHz, txPowerPct = cfg.txPowerPct,
             onDmr = { s, control, data -> br.onRfDmr(s, control, data) },
             onStatus = { /* status hex del módem; ignorado por ahora */ },
             log = log,

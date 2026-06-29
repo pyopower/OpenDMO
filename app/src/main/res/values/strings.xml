@@ -17,6 +17,9 @@
     <string name="lbl_slot">Timeslot (1/2)</string>
     <string name="lbl_cc">Color Code</string>
     <string name="lbl_freq">DMO frequency (MHz)</string>
+    <string name="lbl_power">TX power</string>
+    <string name="power_fmt">TX power: %1$d%% (≈ %2$s)</string>
+    <string name="power_radio">TX power: 100%% (radio\'s own setting)</string>
 
     <string name="btn_start">START</string>
     <string name="btn_stop">STOP</string>

@@ -66,6 +66,11 @@
         <EditText android:id="@+id/etFreq" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:inputType="numberDecimal" android:hint="439.025" />
 
+        <TextView android:id="@+id/tvPower" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:text="@string/lbl_power" />
+        <SeekBar android:id="@+id/sbPower" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:max="100" android:progress="100" />
+
         <Button android:id="@+id/btnToggle" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="16dp" android:text="@string/btn_start" />
 

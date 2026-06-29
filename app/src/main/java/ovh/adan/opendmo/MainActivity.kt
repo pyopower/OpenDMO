@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -144,10 +145,28 @@ class MainActivity : AppCompatActivity() {
         b.etSlot.setText(c.slot.toString())
         b.etCc.setText(c.colorCode.toString()); b.etFreq.setText(c.freqMHz)
         b.cbDynamic.isChecked = c.dynamicTg
+        b.sbPower.progress = c.txPowerPct.coerceIn(0, 100)
+        updatePowerHint(b.sbPower.progress)
         updatePeerHint()
         // recalcular la vista previa del ID de login al teclear
         b.etRadioId.doAfterTextChanged { updatePeerHint() }
         b.etSuffix.doAfterTextChanged { updatePeerHint() }
+        b.sbPower.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(s: SeekBar, p: Int, fromUser: Boolean) = updatePowerHint(p)
+            override fun onStartTrackingTouch(s: SeekBar) {}
+            override fun onStopTrackingTouch(s: SeekBar) {}
+        })
+    }
+
+    /** Etiqueta del slider: % + vatiaje aproximado (escalón OpenGD77 más cercano). 100% = la radio decide. */
+    private fun updatePowerHint(pct: Int) {
+        if (pct >= 100) { b.tvPower.text = getString(R.string.power_radio); return }
+        val steps = doubleArrayOf(0.05, 0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0)
+        val target = pct / 100.0 * 5.0
+        val w = steps.minByOrNull { Math.abs(it - target) } ?: 1.0
+        val wTxt = if (w < 1.0) "${Math.round(w * 1000)} mW"
+                   else "${if (w == Math.floor(w)) w.toInt().toString() else w.toString()} W"
+        b.tvPower.text = getString(R.string.power_fmt, pct, wTxt)
     }
 
     private fun updatePeerHint() {
@@ -171,6 +190,7 @@ class MainActivity : AppCompatActivity() {
             colorCode = i(b.etCc.text.toString(), 1).coerceIn(0, 15),
             freqMHz = b.etFreq.text.toString().trim().ifBlank { "439.025" },
             dynamicTg = b.cbDynamic.isChecked,
+            txPowerPct = b.sbPower.progress.coerceIn(0, 100),
         )
         if (c.host.isBlank()) { toast(getString(R.string.toast_need_host)); return null }
         if (c.radioId == 0) { toast(getString(R.string.toast_need_dmrid)); return null }

@@ -37,6 +37,7 @@ class MmdvmModem(
     private val baud: Int,
     private val colorCode: Int,
     private val freqHz: Int,        // frecuencia DMO (RX=TX) en Hz; se empuja al OpenGD77 con SET_FREQ
+    private val txPowerPct: Int = 100,  // potencia TX (rfLevel MMDVM 0-100); 100 = la radio usa su VFO/canal
     private val onDmr: (slot: Int, control: Int, data: ByteArray) -> Unit,
     private val onStatus: ((String) -> Unit)? = null,
     private val log: (String) -> Unit = {},
@@ -117,10 +118,13 @@ class MmdvmModem(
         // y queda en la frecuencia DMO seleccionada. GET_VERSION -> SET_FREQ -> SET_CONFIG -> SET_MODE.
         frame(GET_VERSION)
         Thread.sleep(250)
-        // SET_FREQ (0x04): [0x00, rxFreq(4 LE), txFreq(4 LE), 0xff(rfLevel), pocsagFreq(4 LE pad)]
+        // SET_FREQ (0x04): [0x00, rxFreq(4 LE), txFreq(4 LE), rfLevel(1), pocsagFreq(4 LE pad)]
         // En DMO rx=tx=freqHz. El padding 0x40,0x0e,0xcf,0x19 (=433 MHz POCSAG) va literal como en dmo.js.
+        // rfLevel = potencia TX (0-255). El OpenGD77 lo interpreta como % de su escala (255=100% → usa el
+        // VFO/canal de la radio); cualquier otro valor lo redondea al escalón más cercano (50mW…5W).
+        val rfLevel = Math.round(txPowerPct.coerceIn(0, 100) * 255.0 / 100.0).toInt().coerceIn(0, 255)
         val f = freqLE(freqHz)
-        frame(SET_FREQ, byteArrayOf(0x00) + f + f + byteArrayOf(0xff.toByte(), 0x40, 0x0e, 0xcf.toByte(), 0x19))
+        frame(SET_FREQ, byteArrayOf(0x00) + f + f + byteArrayOf(rfLevel.toByte(), 0x40, 0x0e, 0xcf.toByte(), 0x19))
         Thread.sleep(120)
         // SET_CONFIG (0x02): bloque exacto de dmo.js (cc en el índice 6).
         val cfg = byteArrayOf(
