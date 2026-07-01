@@ -1,0 +1,15 @@
+<resources>
+    <color name="rig_green">#5DBB63</color>
+    <color name="rig_on_green">#0B2912</color>
+    <color name="rig_bg">#0D1117</color>
+    <color name="rig_surface">#161B22</color>
+
+    <!-- LEDs del dashboard -->
+    <color name="led_on">#4CAF50</color>
+    <color name="led_off">#E53935</color>
+
+    <!-- consola de log -->
+    <color name="console_bg">#0A0F0A</color>
+    <color name="console_text">#7CFC9A</color>
+    <color name="last_heard">#FFC94D</color>
+</resources>

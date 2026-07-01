@@ -53,4 +53,10 @@
     <string name="notif_stop">Ferma</string>
     <string name="st_retry_fmt">riconnessione tra %1$d s…</string>
     <string name="st_radio_out">radio scollegata</string>
+
+    <string name="lbl_net">RETE</string>
+    <string name="lbl_radio">RADIO</string>
+    <string name="lbl_settings_closed">⚙ Impostazioni ▸</string>
+    <string name="lbl_settings_open">⚙ Impostazioni ▾</string>
+    <string name="tg_dynamic">TG dinamico</string>
 </resources>

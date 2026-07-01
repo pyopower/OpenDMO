@@ -46,7 +46,11 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 7)
         }
 
-        loadFields(Config.load(this))
+        val cfg = Config.load(this)
+        loadFields(cfg)
+        // ajustes plegados si ya hay config; desplegados en el primer arranque
+        setSettingsOpen(cfg.host.isBlank())
+        b.btnSettings.setOnClickListener { setSettingsOpen(b.llConfig.visibility != android.view.View.VISIBLE) }
         b.btnToggle.setOnClickListener { if (DmoState.running) stopAll() else startAll() }
         // Minimizar: deja el gateway corriendo en 2º plano y va al fondo (pantalla apagada OK).
         b.btnMinimize.setOnClickListener { moveTaskToBack(true) }
@@ -133,6 +137,29 @@ class MainActivity : AppCompatActivity() {
         val st = DmoState.status.ifBlank { getString(R.string.st_stopped) }
         b.tvStatus.text = getString(R.string.status_fmt, st, net)
         b.tvLog.text = DmoState.logSnapshot()
+        setLed(b.ledNet, DmoState.running && DmoState.netConnected)
+        setLed(b.ledRadio, DmoState.running && DmoState.radioConnected)
+        b.tvLastHeard.text = DmoState.lastHeard.ifBlank { "—" }
+        updateBigTg()
+    }
+
+    private fun setLed(led: android.view.View, on: Boolean) {
+        led.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            getColor(if (on) R.color.led_on else R.color.led_off))
+    }
+
+    /** Línea grande del dashboard: TG (o "dinámico") + frecuencia DMO. */
+    private fun updateBigTg() {
+        val tg = b.etTg.text.toString().trim()
+        val freq = b.etFreq.text.toString().trim().ifBlank { "439.025" }
+        val tgTxt = if (b.cbDynamic.isChecked) getString(R.string.tg_dynamic)
+                    else if (tg.isNotBlank()) "TG $tg" else "TG —"
+        b.tvBigTg.text = "$tgTxt · $freq MHz"
+    }
+
+    private fun setSettingsOpen(open: Boolean) {
+        b.llConfig.visibility = if (open) android.view.View.VISIBLE else android.view.View.GONE
+        b.btnSettings.text = getString(if (open) R.string.lbl_settings_open else R.string.lbl_settings_closed)
     }
 
     private fun loadFields(c: Config) {
@@ -152,6 +179,10 @@ class MainActivity : AppCompatActivity() {
         // recalcular la vista previa del ID de login al teclear
         b.etRadioId.doAfterTextChanged { updatePeerHint() }
         b.etSuffix.doAfterTextChanged { updatePeerHint() }
+        // la línea grande del dashboard sigue lo que se teclea en ajustes
+        b.etTg.doAfterTextChanged { updateBigTg() }
+        b.etFreq.doAfterTextChanged { updateBigTg() }
+        b.cbDynamic.setOnCheckedChangeListener { _, _ -> updateBigTg() }
         b.sbPower.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(s: SeekBar, p: Int, fromUser: Boolean) = updatePowerHint(p)
             override fun onStartTrackingTouch(s: SeekBar) {}

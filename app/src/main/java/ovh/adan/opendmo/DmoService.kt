@@ -21,8 +21,12 @@ object DmoState {
     @Volatile var running = false
     @Volatile var status = ""
     @Volatile var netConnected = false
+    @Volatile var radioConnected = false
+    @Volatile var lastHeard = ""
     val logLines = ArrayDeque<String>()
     @Volatile var listener: (() -> Unit)? = null
+
+    fun pushLastHeard(s: String) { lastHeard = s; notifyUi() }
 
     fun log(line: String) {
         synchronized(logLines) {
@@ -63,6 +67,7 @@ class DmoService : Service() {
                     val c = controller ?: return@postDelayed
                     if (c.active && !c.modemUp()) {
                         c.stop()
+                        DmoState.radioConnected = false
                         DmoState.log(getString(R.string.st_radio_out))
                         DmoState.pushStatus(getString(R.string.st_radio_out))
                         updateNotification(getString(R.string.st_radio_out))
@@ -78,6 +83,7 @@ class DmoService : Service() {
         override fun run() {
             val c = controller
             if (c != null && (!c.active || !c.modemUp())) reopenOtg()
+            DmoState.radioConnected = controller?.modemUp() == true
             handler.postDelayed(this, 10_000)
         }
     }
@@ -90,6 +96,7 @@ class DmoService : Service() {
         if (MmdvmModem.findDriver(usb) == null) return
         DmoState.log("reabriendo módem OTG")
         val ok = c.start()
+        DmoState.radioConnected = ok && c.modemUp()
         if (!ok) DmoState.log(getString(R.string.log_otg_down))
     }
 
@@ -115,6 +122,7 @@ class DmoService : Service() {
             onStatus = { s -> DmoState.pushStatus(s); updateNotification(s) },
             log = { DmoState.log(it) },
             nameOf = { id -> lookup.name(id) },
+            onCall = { DmoState.pushLastHeard(it) },
         )
         val p = HbpPeer(
             context = this, cfg = cfg,
@@ -143,6 +151,7 @@ class DmoService : Service() {
 
         p.start()
         val ok = ctrl.start()
+        DmoState.radioConnected = ok && ctrl.modemUp()
         if (!ok) DmoState.log(getString(R.string.log_otg_down))
         DmoState.running = true
         return START_STICKY
@@ -159,6 +168,7 @@ class DmoService : Service() {
         wakeLock = null
         DmoState.running = false
         DmoState.netConnected = false
+        DmoState.radioConnected = false
         DmoState.pushStatus(getString(R.string.st_stopped))
         super.onDestroy()
     }

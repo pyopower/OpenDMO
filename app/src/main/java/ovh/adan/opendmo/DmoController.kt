@@ -17,6 +17,7 @@ class DmoController(
     private val onStatus: (String) -> Unit,
     private val log: (String) -> Unit,
     private val nameOf: (Int) -> String = { it.toString() },
+    private val onCall: (String) -> Unit = {},
 ) {
     private var modem: MmdvmModem? = null
     private var bridge: DmoBridge? = null
@@ -43,6 +44,7 @@ class DmoController(
             },
             log = log,
             nameOf = nameOf,
+            onCall = onCall,
         )
         val freqHz = try { Math.round(cfg.freqMHz.trim().toDouble() * 1_000_000.0).toInt() } catch (_: Exception) { 439_025_000 }
         val md = MmdvmModem(

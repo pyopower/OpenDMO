@@ -28,6 +28,7 @@ class DmoBridge(
                            frameType: Int, dtypeVseq: Int, streamId: ByteArray, burst: ByteArray) -> Unit,
     private val log: (String) -> Unit = {},
     private val nameOf: (Int) -> String = { it.toString() },   // DMR ID -> "EA1ABC (id)" si se conoce
+    private val onCall: (String) -> Unit = {},                 // last heard para el dashboard de la UI
 ) {
     var modem: DmrSink? = null
 
@@ -115,7 +116,7 @@ class DmoBridge(
 
     private fun flush(m: DmrSink) { while (txbuf.isNotEmpty()) m.sendDmr(networkSlot, 0x00, txbuf.removeFirst()) }
 
-    private fun setLastRx(text: String) { lastRx = text; log(text) }
+    private fun setLastRx(text: String) { lastRx = text; log(text); onCall(text) }
 
     companion object { private const val PREBUF = 4 }   // 4×60 ms ≈ 240 ms de cojín (igual que la web)
 }

@@ -1,5 +1,9 @@
 <resources>
-    <style name="Theme.OpenDMO" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@android:color/holo_green_dark</item>
+    <!-- Oscuro SIEMPRE (uso nocturno/portable, look "equipo de radio"), acento verde. -->
+    <style name="Theme.OpenDMO" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/rig_green</item>
+        <item name="colorOnPrimary">@color/rig_on_green</item>
+        <item name="android:colorBackground">@color/rig_bg</item>
+        <item name="colorSurface">@color/rig_surface</item>
     </style>
 </resources>

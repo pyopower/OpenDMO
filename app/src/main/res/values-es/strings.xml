@@ -53,4 +53,10 @@
     <string name="notif_stop">Parar</string>
     <string name="st_retry_fmt">reconectando en %1$d s…</string>
     <string name="st_radio_out">radio desenchufada</string>
+
+    <string name="lbl_net">RED</string>
+    <string name="lbl_radio">RADIO</string>
+    <string name="lbl_settings_closed">⚙ Ajustes ▸</string>
+    <string name="lbl_settings_open">⚙ Ajustes ▾</string>
+    <string name="tg_dynamic">TG dinámico</string>
 </resources>

@@ -60,4 +60,10 @@
     <string name="notif_stop">Stop</string>
     <string name="st_retry_fmt">reconnecting in %1$d s…</string>
     <string name="st_radio_out">radio unplugged</string>
+
+    <string name="lbl_net">NET</string>
+    <string name="lbl_radio">RADIO</string>
+    <string name="lbl_settings_closed">⚙ Settings ▸</string>
+    <string name="lbl_settings_open">⚙ Settings ▾</string>
+    <string name="tg_dynamic">TG dynamic</string>
 </resources>

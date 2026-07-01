@@ -53,4 +53,10 @@
     <string name="notif_stop">Stopp</string>
     <string name="st_retry_fmt">Neuverbindung in %1$d s…</string>
     <string name="st_radio_out">Funkgerät getrennt</string>
+
+    <string name="lbl_net">NETZ</string>
+    <string name="lbl_radio">FUNK</string>
+    <string name="lbl_settings_closed">⚙ Einstellungen ▸</string>
+    <string name="lbl_settings_open">⚙ Einstellungen ▾</string>
+    <string name="tg_dynamic">TG dynamisch</string>
 </resources>
