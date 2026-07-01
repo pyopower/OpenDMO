@@ -41,11 +41,18 @@ class MmdvmModem(
     private val onDmr: (slot: Int, control: Int, data: ByteArray) -> Unit,
     private val onStatus: ((String) -> Unit)? = null,
     private val log: (String) -> Unit = {},
-) {
-    @Volatile var connected = false; private set
+) : DmrSink {
+    @Volatile override var connected = false; private set
     @Volatile var version = ""; private set
 
+    // Espacio libre del buffer DMR TX del firmware (GET_STATUS). -1 = aún desconocido:
+    // en ese caso NO se aplica pacing (comportamiento antiguo), por si algún firmware
+    // no contesta al GET_STATUS.
+    @Volatile private var dmrSpace = -1
+    @Volatile private var lastStatusMs = 0L
+
     private val txQueue = LinkedBlockingQueue<ByteArray>(200)
+    private val writeLock = Any()      // serializa port.write (txLoop vs poll de estado del rxLoop)
     @Volatile private var stop = false
     private var rxThread: Thread? = null
     private var txThread: Thread? = null
@@ -105,7 +112,7 @@ class MmdvmModem(
     }
 
     private fun frame(typ: Int, payload: ByteArray = ByteArray(0)) {
-        port.write(build(typ, payload), WRITE_TIMEOUT_MS)
+        synchronized(writeLock) { port.write(build(typ, payload), WRITE_TIMEOUT_MS) }
     }
 
     /** Frecuencia en Hz -> 4 bytes little-endian (como freqLE de dmo.js). */
@@ -164,7 +171,7 @@ class MmdvmModem(
 
     // ---------- envío (red -> RF) ----------
     /** Encola una trama DMR hacia la radio. slot: 1 o 2; data = 33 bytes de burst. */
-    fun sendDmr(slot: Int, control: Int, dmrData: ByteArray) {
+    override fun sendDmr(slot: Int, control: Int, dmrData: ByteArray) {
         val typ = if (slot == 2) DMR_DATA2 else DMR_DATA1
         val data = if (dmrData.size >= DMR_FRAME_BYTES) dmrData.copyOf(DMR_FRAME_BYTES)
                    else dmrData.copyOf(DMR_FRAME_BYTES) // copyOf rellena con 0 si es más corto
@@ -177,8 +184,20 @@ class MmdvmModem(
     private fun txLoop() {
         while (!stop) {
             val f = try { txQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS) } catch (_: InterruptedException) { null } ?: continue
+            val isDmr = (f[2].toInt() and 0xFF).let { it == DMR_DATA1 || it == DMR_DATA2 }
+            // Pacing por espacio real del firmware (como MMDVMHost): si el GET_STATUS es
+            // reciente y el buffer DMR va justo, espera a que la radio drene antes de
+            // escribir; evita desbordar el módem si el master manda a ráfagas. Si el
+            // estado es viejo/desconocido no se bloquea (fallback al comportamiento previo).
+            if (isDmr) {
+                var waited = 0
+                while (!stop && spaceKnown() && dmrSpace < 2 && waited < 600) {
+                    Thread.sleep(20); waited += 20
+                }
+            }
             try {
-                port.write(f, WRITE_TIMEOUT_MS)
+                synchronized(writeLock) { port.write(f, WRITE_TIMEOUT_MS) }
+                if (isDmr && dmrSpace > 0) dmrSpace--
             } catch (e: Exception) {
                 log("Error escribiendo al módem: ${e.message}")
                 connected = false
@@ -186,6 +205,9 @@ class MmdvmModem(
             }
         }
     }
+
+    private fun spaceKnown(): Boolean =
+        dmrSpace >= 0 && System.nanoTime() / 1_000_000L - lastStatusMs < 3000
 
     // ---------- recepción (RF -> red) ----------
     private fun rxLoop() {
@@ -204,8 +226,11 @@ class MmdvmModem(
                 for (k in 0 until n) buf.addLast(tmp[k])
                 consume(buf)
             }
+            // poll de estado: cada 1 s en reposo, cada 250 ms si hay cola TX (el pacing
+            // del txLoop necesita ver el espacio del buffer fresco, como hace MMDVMHost)
+            val pollEvery = if (txQueue.isEmpty()) 1_000_000_000L else 250_000_000L
             val now = System.nanoTime()
-            if (now - lastPoll > 1_000_000_000L) {   // poll de estado cada 1 s
+            if (now - lastPoll > pollEvery) {
                 lastPoll = now
                 try { frame(GET_STATUS) } catch (_: Exception) {}
             }
@@ -238,7 +263,16 @@ class MmdvmModem(
                 val slot = if (typ == DMR_LOST2) 2 else 1
                 onDmr(slot, 0xFF, ByteArray(0))       // 0xFF = marcador de fin de TX RF
             }
-            GET_STATUS -> onStatus?.invoke("status:" + payload.joinToString("") { "%02x".format(it) })
+            GET_STATUS -> {
+                // Layout MMDVM v1 (MMDVMHost Modem.cpp): [0]=modes [1]=state [2]=flags
+                // [3]=espacio D-Star [4]=espacio DMR TS1 [5]=espacio DMR TS2 …
+                // En DMO el OpenGD77 transmite por el "TS2" del cable (DMR_DATA2).
+                if (payload.size >= 6) {
+                    dmrSpace = payload[5].toInt() and 0xFF
+                    lastStatusMs = System.nanoTime() / 1_000_000L
+                }
+                onStatus?.invoke("status:" + payload.joinToString("") { "%02x".format(it) })
+            }
         }
     }
 

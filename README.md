@@ -1,5 +1,7 @@
 # OpenDMO
 
+![Android CI](https://github.com/pyopower/OpenDMO/actions/workflows/android.yml/badge.svg)
+
 Aplicación Android **independiente y configurable** que convierte un teléfono +
 una radio **OpenGD77** (GD-77 / RD-5R / DM-1801, conectada por **USB-OTG**) en un
 **gateway DMO** hacia cualquier master DMR Homebrew (HBP/hblink/BrandMeister-style).
@@ -20,7 +22,22 @@ enruta los bursts DMR entre el aire (DMO simplex) y la red. No necesita root.
 - Funciona en **segundo plano / pantalla apagada** (foreground service +
   WakeLock + exención de optimización de batería).
 - Se **ofrece al conectar** la OpenGD77 (filtro USB) y puede arrancar sola.
+- **Reconexión automática** al master (backoff 5→60 s) y watchdog de keepalive:
+  si el master calla 30 s o cambia la red (WiFi↔datos), relogin solo.
+- **Hot-plug USB**: si desenchufas/enchufas la radio con el gateway en marcha,
+  el módem se cierra/reabre solo (sin pasar por la app); watchdog del USB cada 10 s.
+- **Options `RPTO`** tras el login (suscripción de TGs estilo BM/TGIF,
+  p. ej. `TS2_1=214;TS2_2=91`).
+- **Last heard con indicativo**: los DMR ID se resuelven contra radioid.net
+  (caché local persistente) y salen en el log como `EA1ABC (2130001)`.
+- **Pacing hacia la radio por espacio real del buffer** del firmware (`GET_STATUS`),
+  como MMDVMHost: no se desborda el módem si el master manda a ráfagas.
+- **Passphrase cifrada** (EncryptedSharedPreferences / Android Keystore), con
+  migración automática desde el almacén antiguo.
+- Notificación con **botón Parar** y acceso directo a la app.
 - **Multiidioma** siguiendo el sistema (en/es/fr/de/it/pt; inglés por defecto).
+- **Tests JUnit** del mapeo del bridge (golden test derivado de la captura con
+  radio real) + **CI en GitHub Actions** (APK debug por push, Release en tags `v*`).
 
 ## Compilar
 

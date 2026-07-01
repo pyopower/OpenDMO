@@ -50,6 +50,13 @@
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
             android:textSize="12sp" android:text="@string/hint_dynamic_tg" />
 
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_options" />
+        <EditText android:id="@+id/etOptions" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="text" android:hint="TS2_1=214;TS2_2=91" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="12sp" android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/hint_options" />
+
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_tg" />
         <EditText android:id="@+id/etTg" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:inputType="number" android:hint="213666" />

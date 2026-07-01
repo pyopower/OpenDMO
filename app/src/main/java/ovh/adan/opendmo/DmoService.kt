@@ -3,11 +3,17 @@ package ovh.adan.opendmo
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.hardware.usb.UsbManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.PowerManager
 
 /** Estado observable por la UI (el servicio corre aunque la Activity no esté visible). */
@@ -34,15 +40,62 @@ object DmoState {
  * Servicio en primer plano del gateway DMO. Une el peer HBP y el controlador OTG:
  *   peer.onDmrd  -> (filtro TG) -> controller.onNetDmrd  (red -> RF)
  *   controller.sender -> peer.sendDmrd                   (RF -> red)
+ *
+ * Robustez OTG: receiver de ATTACH/DETACH (si la radio se desenchufa se cierra el módem;
+ * al enchufarla se reabre solo, sin pasar por la Activity) + watchdog cada 10 s que
+ * reabre el módem si sus hilos murieron (error USB) y la radio sigue presente.
  */
 class DmoService : Service() {
     private var peer: HbpPeer? = null
     private var controller: DmoController? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    // OJO: estos broadcasts saltan con CUALQUIER dispositivo USB; se comprueba el estado
+    // real del módem (con un margen para que el rx-loop note el fallo / termine la
+    // enumeración) en vez de fiarse del evento.
+    private val usbReceiver = object : BroadcastReceiver() {
+        override fun onReceive(ctx: Context, intent: Intent) {
+            when (intent.action) {
+                UsbManager.ACTION_USB_DEVICE_DETACHED -> handler.postDelayed({
+                    val c = controller ?: return@postDelayed
+                    if (c.active && !c.modemUp()) {
+                        c.stop()
+                        DmoState.log(getString(R.string.st_radio_out))
+                        DmoState.pushStatus(getString(R.string.st_radio_out))
+                        updateNotification(getString(R.string.st_radio_out))
+                    }
+                }, 500)
+                UsbManager.ACTION_USB_DEVICE_ATTACHED ->
+                    handler.postDelayed({ reopenOtg() }, 800)
+            }
+        }
+    }
+
+    private val watchdog = object : Runnable {
+        override fun run() {
+            val c = controller
+            if (c != null && (!c.active || !c.modemUp())) reopenOtg()
+            handler.postDelayed(this, 10_000)
+        }
+    }
+
+    /** Reabre el módem si hay radio a la vista y no está ya funcionando. */
+    private fun reopenOtg() {
+        val c = controller ?: return
+        if (c.active && c.modemUp()) return
+        val usb = getSystemService(Context.USB_SERVICE) as UsbManager
+        if (MmdvmModem.findDriver(usb) == null) return
+        DmoState.log("reabriendo módem OTG")
+        val ok = c.start()
+        if (!ok) DmoState.log(getString(R.string.log_otg_down))
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP) { stopSelf(); return START_NOT_STICKY }
+
         startForeground(1, buildNotification(getString(R.string.notif_starting)))
         // WakeLock parcial: la CPU sigue procesando audio/red con la pantalla apagada.
         if (wakeLock == null) {
@@ -51,13 +104,17 @@ class DmoService : Service() {
                 setReferenceCounted(false); acquire()
             }
         }
+        // re-arranque (botón START con el servicio ya vivo): tirar lo anterior primero
+        controller?.stop(); peer?.stop()
         val cfg = Config.load(this)
+        val lookup = DmrIdLookup(this) { DmoState.log(it) }
 
         val ctrl = DmoController(
             context = this, cfg = cfg,
             sender = { pkt -> peer?.sendDmrd(pkt) ?: false },
             onStatus = { s -> DmoState.pushStatus(s); updateNotification(s) },
             log = { DmoState.log(it) },
+            nameOf = { id -> lookup.name(id) },
         )
         val p = HbpPeer(
             context = this, cfg = cfg,
@@ -71,6 +128,19 @@ class DmoService : Service() {
         )
         peer = p; controller = ctrl
 
+        if (!usbRegistered) {
+            val f = IntentFilter().apply {
+                addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+                addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                registerReceiver(usbReceiver, f, Context.RECEIVER_EXPORTED)
+            else registerReceiver(usbReceiver, f)
+            usbRegistered = true
+        }
+        handler.removeCallbacks(watchdog)
+        handler.postDelayed(watchdog, 10_000)
+
         p.start()
         val ok = ctrl.start()
         if (!ok) DmoState.log(getString(R.string.log_otg_down))
@@ -78,7 +148,11 @@ class DmoService : Service() {
         return START_STICKY
     }
 
+    private var usbRegistered = false
+
     override fun onDestroy() {
+        handler.removeCallbacksAndMessages(null)
+        if (usbRegistered) { try { unregisterReceiver(usbReceiver) } catch (_: Exception) {}; usbRegistered = false }
         controller?.stop()
         peer?.stop()
         try { wakeLock?.let { if (it.isHeld) it.release() } } catch (_: Exception) {}
@@ -97,11 +171,19 @@ class DmoService : Service() {
                 nm.createNotificationChannel(NotificationChannel(chId, "OpenDMO", NotificationManager.IMPORTANCE_LOW))
             }
         }
+        val piFlags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        val openApp = PendingIntent.getActivity(this, 1, Intent(this, MainActivity::class.java), piFlags)
+        val stop = PendingIntent.getService(this, 2,
+            Intent(this, DmoService::class.java).setAction(ACTION_STOP), piFlags)
         return Notification.Builder(this, chId)
             .setContentTitle(getString(R.string.notif_title))
             .setContentText(text)
-            .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setSmallIcon(R.drawable.ic_stat_antenna)
+            .setContentIntent(openApp)
             .setOngoing(true)
+            .addAction(Notification.Action.Builder(
+                android.graphics.drawable.Icon.createWithResource(this, R.drawable.ic_stat_antenna),
+                getString(R.string.notif_stop), stop).build())
             .build()
     }
 
@@ -111,6 +193,8 @@ class DmoService : Service() {
     }
 
     companion object {
+        const val ACTION_STOP = "ovh.adan.opendmo.STOP"
+
         fun start(ctx: Context) {
             val i = Intent(ctx, DmoService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(i) else ctx.startService(i)

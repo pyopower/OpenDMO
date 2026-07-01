@@ -47,4 +47,10 @@
     <string name="otg_radio_fmt">radio: %1$s</string>
     <string name="otg_open_fmt">%1$s · %2$s MHz CC%3$d</string>
     <string name="otg_err_fmt">OTG: %1$s</string>
+
+    <string name="lbl_options">Options (RPTO)</string>
+    <string name="hint_options">Suscripción de TGs en masters tipo BM/TGIF, p. ej. TS2_1=214;TS2_2=91. Déjalo vacío si tu master no lo usa.</string>
+    <string name="notif_stop">Parar</string>
+    <string name="st_retry_fmt">reconectando en %1$d s…</string>
+    <string name="st_radio_out">radio desenchufada</string>
 </resources>

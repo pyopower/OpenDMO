@@ -27,8 +27,9 @@ class DmoBridge(
     private val sendDmrd: (seqNo: Int, rfSrc: Int, dst: Int, slot: Int,
                            frameType: Int, dtypeVseq: Int, streamId: ByteArray, burst: ByteArray) -> Unit,
     private val log: (String) -> Unit = {},
+    private val nameOf: (Int) -> String = { it.toString() },   // DMR ID -> "EA1ABC (id)" si se conoce
 ) {
-    var modem: MmdvmModem? = null
+    var modem: DmrSink? = null
 
     // --- RF -> red ---
     private var txStream: ByteArray? = null
@@ -67,8 +68,9 @@ class DmoBridge(
                         if (txStream == null) {                  // SOLO inicia stream si no hay llamada activa
                             txStream = Random.nextBytes(4); txSeq = 0; vpos = 0; rfFrames = 0
                             // TG dinámico: el TG real lo marca la radio en el Full LC de esta cabecera.
-                            txDst = if (dynamicTg) (DmrLc.decodeHeaderLc(data)?.dst ?: talkgroup) else talkgroup
-                            setLastRx("RF→TG$txDst")
+                            val lc = if (dynamicTg) DmrLc.decodeHeaderLc(data) else null
+                            txDst = lc?.dst ?: talkgroup
+                            setLastRx("RF ${nameOf(lc?.src ?: radioId)} → TG$txDst")
                         }
                         ft = DmrVoice.HBPF_DATA_SYNC; dv = 1
                     }
@@ -96,7 +98,7 @@ class DmoBridge(
         if (!rxActive) {
             if (frameType == DmrVoice.HBPF_DATA_SYNC && dtypeVseq == 2) return  // cola de llamada ya terminada
             rxStream = streamId; rxActive = true; txbuf.clear()
-            setLastRx("RV→RF $src → TG$dst")
+            setLastRx("NET→RF ${nameOf(src)} → TG$dst")
         } else if (streamId != rxStream) {
             return                                              // otra llamada simultánea: la 1ª gana
         }
@@ -111,7 +113,7 @@ class DmoBridge(
         }
     }
 
-    private fun flush(m: MmdvmModem) { while (txbuf.isNotEmpty()) m.sendDmr(networkSlot, 0x00, txbuf.removeFirst()) }
+    private fun flush(m: DmrSink) { while (txbuf.isNotEmpty()) m.sendDmr(networkSlot, 0x00, txbuf.removeFirst()) }
 
     private fun setLastRx(text: String) { lastRx = text; log(text) }
 

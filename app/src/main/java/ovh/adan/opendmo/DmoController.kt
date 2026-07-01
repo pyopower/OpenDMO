@@ -16,13 +16,18 @@ class DmoController(
     private val sender: (ByteArray) -> Boolean,
     private val onStatus: (String) -> Unit,
     private val log: (String) -> Unit,
+    private val nameOf: (Int) -> String = { it.toString() },
 ) {
     private var modem: MmdvmModem? = null
     private var bridge: DmoBridge? = null
     @Volatile var active = false; private set
 
-    /** Abre el módem. Devuelve true si quedó operativo. */
+    /** true si el módem sigue vivo (sus hilos rx/tx lo bajan al fallar el USB). */
+    fun modemUp(): Boolean = modem?.connected == true
+
+    /** Abre el módem. Devuelve true si quedó operativo. Reentrante: si ya había uno, lo cierra. */
     fun start(): Boolean {
+        if (active) stop()
         val usb = context.getSystemService(Context.USB_SERVICE) as UsbManager
         val driver = MmdvmModem.findDriver(usb)
         if (driver == null) { log(MmdvmModem.usbInventory(usb)); onStatus(context.getString(R.string.otg_no_radio)); return false }
@@ -37,6 +42,7 @@ class DmoController(
                 sender(pkt); Unit
             },
             log = log,
+            nameOf = nameOf,
         )
         val freqHz = try { Math.round(cfg.freqMHz.trim().toDouble() * 1_000_000.0).toInt() } catch (_: Exception) { 439_025_000 }
         val md = MmdvmModem(

@@ -147,6 +147,7 @@ class MainActivity : AppCompatActivity() {
         b.cbDynamic.isChecked = c.dynamicTg
         b.sbPower.progress = c.txPowerPct.coerceIn(0, 100)
         updatePowerHint(b.sbPower.progress)
+        b.etOptions.setText(c.options)
         updatePeerHint()
         // recalcular la vista previa del ID de login al teclear
         b.etRadioId.doAfterTextChanged { updatePeerHint() }
@@ -191,6 +192,7 @@ class MainActivity : AppCompatActivity() {
             freqMHz = b.etFreq.text.toString().trim().ifBlank { "439.025" },
             dynamicTg = b.cbDynamic.isChecked,
             txPowerPct = b.sbPower.progress.coerceIn(0, 100),
+            options = b.etOptions.text.toString().trim(),
         )
         if (c.host.isBlank()) { toast(getString(R.string.toast_need_host)); return null }
         if (c.radioId == 0) { toast(getString(R.string.toast_need_dmrid)); return null }

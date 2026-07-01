@@ -9,7 +9,8 @@ plugins {
 // Credenciales de firma release (NUNCA versionado ni en GitHub): viven FUERA del arbol del
 // proyecto, en ~/keystores/opendmo/, para que no las borre un rsync --delete ni acaben en git.
 // OpenDMO se firma con el keystore de RadioVampiros (misma identidad de firma).
-val keystorePropsFile = file("/home/yo/keystores/opendmo/keystore.properties")
+// En CI (GitHub Actions) la ruta se inyecta con la variable de entorno OPENDMO_KEYSTORE.
+val keystorePropsFile = file(System.getenv("OPENDMO_KEYSTORE") ?: "/home/yo/keystores/opendmo/keystore.properties")
 val keystoreProps = Properties().apply {
     if (keystorePropsFile.exists()) load(FileInputStream(keystorePropsFile))
 }
@@ -22,8 +23,8 @@ android {
         applicationId = "ovh.adan.opendmo"
         minSdk = 26
         targetSdk = 34
-        versionCode = 9
-        versionName = "0.1.8"
+        versionCode = 10
+        versionName = "0.2.0"
     }
 
     signingConfigs {
@@ -73,4 +74,9 @@ dependencies {
 
     // serie USB por OTG (CDC/ACM autodetectado, sin root) — OpenGD77
     implementation("com.github.mik3y:usb-serial-for-android:3.7.0")
+
+    // passphrase cifrada (Android Keystore)
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    testImplementation("junit:junit:4.13.2")
 }
