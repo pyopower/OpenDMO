@@ -17,11 +17,17 @@ radio pone el vocoder AMBE; los 33 bytes de burst pasan crudos en ambos sentidos
 
 ## Instalación (router OpenWrt)
 
+Directo desde el router (el .ipk se baja a `/tmp`, en RAM):
+
 ```sh
+cd /tmp
+wget https://github.com/pyopower/OpenDMO/releases/download/openwrt-v0.1.0/opendmo_0.1.0_mipsel_24kc.ipk
 opkg update
-opkg install kmod-usb-acm
-opkg install opendmo_<version>_<arch>.ipk
+opkg install kmod-usb-acm /tmp/opendmo_0.1.0_mipsel_24kc.ipk
 ```
+
+(En un OpenWrt vanilla sin certificados CA: `opkg install ca-bundle` primero, o
+`wget --no-check-certificate`. El firmware de fábrica GL.iNet ya los trae.)
 
 Arquitecturas publicadas: `mipsel_24kc` (Mango/ramips), `mips_24kc` (ath79),
 `aarch64_cortex-a53` (GL.iNet aarch64).
