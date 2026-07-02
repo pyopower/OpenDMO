@@ -71,9 +71,12 @@ una Raspberry Pi con la radio en USB:
 
 ## Notas
 
-- El GL.iNet **Opal** (GL-SFT1200, SoC Siflower) no tiene soporte OpenWrt
-  oficial; su firmware de fábrica es OpenWrt-based pero con SDK propio. El
-  binario `mipsel_24kc` puede no ser compatible — sin probar.
+- GL.iNet **Opal** (GL-SFT1200, SoC Siflower): probado en firmware de fábrica
+  4.3.28 — el binario `opendmo-mango` (mipsle) **corre**, `kmod-usb-acm` ya viene
+  cargado de serie y el login HBP contra un master por internet funciona desde el
+  propio router. Como su opkg usa otra arquitectura, instala a mano: copia el
+  binario a `/usr/bin/opendmo` y los ficheros de `openwrt/` a `/etc/init.d/opendmo`
+  y `/etc/config/opendmo`. (La parte serie con radio sigue pendiente de probar.)
 - La passphrase se pasa al daemon por entorno (no aparece en `ps`) y
   `/etc/config/opendmo` queda con permisos `600`.
 - El daemon reabre solo el módem si la radio se desenchufa/reenchufa, y
