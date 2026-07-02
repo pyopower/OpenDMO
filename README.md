@@ -12,6 +12,11 @@ enruta los bursts DMR entre el aire (DMO simplex) y la red. No necesita root.
 > ⚠️ Uso para radioaficionados con licencia. Transmitir en bandas de aficionado
 > requiere indicativo y autorización. Úsalo bajo tu responsabilidad.
 
+> 🛜 **¿Sin móvil? También hay port para routers OpenWrt** (GL.iNet Mango y
+> similares): daemon en Go con los mismos protocolos, en la rama
+> [`openwrt`](https://github.com/pyopower/OpenDMO/tree/openwrt). Paquetes `.ipk`
+> en las releases `openwrt-v*`.
+
 ## Características
 
 - Gateway **DMO** (simplex directo) OpenGD77 ↔ master HBP por OTG, sin red propia.
